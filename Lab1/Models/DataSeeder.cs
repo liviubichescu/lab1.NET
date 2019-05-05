@@ -11,7 +11,6 @@ namespace Lab1.Models
         {
             context.Database.EnsureCreated();
 
-            // Look for any cakes.
             if (context.Movies.Any())
             {
                 return;   // DB has been seeded
