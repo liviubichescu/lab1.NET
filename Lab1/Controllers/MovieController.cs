@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Lab1.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Lab1.Controllers
 {
@@ -10,18 +12,34 @@ namespace Lab1.Controllers
     public class MovieController : ControllerBase
     {
 
-        private IntroDbContext context;
+        private MovieDbContext context;
 
-        public MovieController(IntroDbContext context)
+        public MovieController(MovieDbContext context)
         {
             this.context = context;
         }
 
         // GET: api/Movie
         [HttpGet]
-        public IEnumerable<Movie> Get()
+        public IEnumerable<Movie> GetAllMovies([FromQuery]DateTime? from, [FromQuery]DateTime? to)
         {
-            return context.Movies;
+            IQueryable<Movie> result = context.Movies.Include(f => f.Comments).OrderByDescending(f => f.ReleseYear);
+
+            if (from == null && to == null)
+            {
+                return result;
+            }
+            if (from != null)
+            {
+                result = result.Where(f => f.DateAdded > from);
+            }
+            if (to != null)
+            {
+                result = result.Where(f => f.DateAdded < to);
+            }
+
+
+            return result;
         }
 
         // GET: api/Movie/5
@@ -52,18 +70,21 @@ namespace Lab1.Controllers
             {
                 return BadRequest(ModelState);
             }
+
             var existing = context.Movies.FirstOrDefault(c => c.Id == id);
+
             if (existing != null)
             {
                 movie.Id = existing.Id;
                 context.Movies.Remove(existing);
             }
+
             context.Movies.Add(movie);
             context.SaveChanges();
             return Ok();
         }
 
-        // DELETE: api/ApiWithActions/5
+        // DELETE: api/Movie/5
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
@@ -72,6 +93,7 @@ namespace Lab1.Controllers
             {
                 return NotFound();
             }
+
             context.Movies.Remove(found);
             context.SaveChanges();
             return Ok();

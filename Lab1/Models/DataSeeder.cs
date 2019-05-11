@@ -7,7 +7,7 @@ namespace Lab1.Models
 {
     public class DataSeeder
     {
-        public static void Initialize(IntroDbContext context)
+        public static void Initialize(MovieDbContext context)
         {
             context.Database.EnsureCreated();
 
@@ -20,16 +20,14 @@ namespace Lab1.Models
                 new Movie
                 {
                     Title = "Avengers",
-                    Runtime = 2,
-                    Rating = 5,
-                    StoryLine = "A team of hearos save the earth!"
+                    Rating = 9,
+
                 },
                 new Movie
                 {
                     Title = "Captain Marvel",
-                    Runtime = 3,
-                    Rating = 5,
-                    StoryLine = "The boss of the Marvel heroes!"
+                    Rating = 7,
+
                 });
             context.SaveChanges();
         }

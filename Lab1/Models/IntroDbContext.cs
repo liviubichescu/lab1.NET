@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace Lab1.Models
 {
-    public class IntroDbContext : DbContext
+    public class MovieDbContext : DbContext
     {
-        public IntroDbContext(DbContextOptions<IntroDbContext> options) : base(options)
+        public MovieDbContext(DbContextOptions<MovieDbContext> options) : base(options)
         {
         }
         public DbSet<Movie> Movies { get; set; }
+        //public DbSet<Comment> Comments { get; set; }
     }
 }
