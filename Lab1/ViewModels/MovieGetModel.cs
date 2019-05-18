@@ -25,7 +25,8 @@ namespace Lab1.ViewModels
                 ReleseYear = movie.ReleseYear,
                 DateAdded = movie.DateAdded,
                 Director = movie.Director,
-                Rating = movie.Rating
+                Rating = movie.Rating,
+                
             };
         }
     }

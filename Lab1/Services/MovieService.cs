@@ -19,7 +19,7 @@ namespace Lab1.Services
         IEnumerable<MovieGetModel> GetAllMovies(DateTime? from = null, DateTime? to = null);
         Movie GetById(int id);
         Movie Create(MoviePostModel movie);
-        MoviePostModel Upsert(int id, MoviePostModel movie);
+        Movie Upsert(int id, Movie movie);
         Movie Delete(int id);
     }
 
@@ -42,7 +42,7 @@ namespace Lab1.Services
 
         public Movie Delete(int id)
         {
-            Movie movie = dbContext.Movies.Find(id);
+            Movie movie = dbContext.Movies.Include(c => c.Comments).FirstOrDefault(c => c.Id == id);
             if (movie == null)
             {
                 return null;
@@ -79,18 +79,18 @@ namespace Lab1.Services
             return dbContext.Movies.Include(c=> c.Comments).FirstOrDefault(m => m.Id == id);
         }
 
-        public MoviePostModel Upsert(int id, MoviePostModel movie)
+        public Movie Upsert(int id, Movie movie)
         {
-            var existing = dbContext.Movies.FirstOrDefault(c => c.Id == id);
+            var existing = dbContext.Movies.AsNoTracking().FirstOrDefault(c => c.Id == id);
 
             if (existing == null)
             {
-                dbContext.Movies.Add(MoviePostModel.ToMovie(movie));
+                dbContext.Movies.Add(movie);
                 dbContext.SaveChanges();
                 return movie;
             }
-
-            dbContext.Movies.Update(MoviePostModel.ToMovie(movie));
+            movie.Id = id;
+            dbContext.Movies.Update(movie);
             dbContext.SaveChanges();
 
             return movie;

@@ -20,6 +20,7 @@ namespace Lab1.ViewModels
         [Range(1, 10)]
         public double Rating { get; set; }
         public string WasWatched { get; set; }
+        public List<Comment> Comments { get; set; }
 
 
         public static Movie ToMovie(MoviePostModel movie)
@@ -51,12 +52,13 @@ namespace Lab1.ViewModels
                 Title = movie.Title,
                 Description = movie.Description,
                 MovieGenre = movieGenre,
-                DurationInMinutes =movie.DurationInMinutes,
+                DurationInMinutes = movie.DurationInMinutes,
                 ReleseYear = movie.ReleseYear,
                 Director = movie.Director,
                 DateAdded = movie.DateAdded,
                 Rating = movie.Rating,
-                WasWatched = watched
+                WasWatched = watched,
+                Comments = movie.Comments
             };
         }
     }
