@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Lab1.Models;
+using Lab1.Services;
+using Lab1.ViewModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,91 +15,133 @@ namespace Lab1.Controllers
     public class MovieController : ControllerBase
     {
 
-        private MovieDbContext context;
+        private IMovieService service;
 
-        public MovieController(MovieDbContext context)
+        public MovieController(IMovieService service)
         {
-            this.context = context;
+            this.service = service;
         }
 
+        /// <summary>
+        /// Gets all the Movies from the application.
+        /// </summary>
+        /// <param name="from">Optional, filter by minimum DateAdded.</param>
+        /// <param name="to">Optional, filter by maximum DateAdded.</param>
+        /// <returns>A list of movie objects.</returns>
         // GET: api/Movie
         [HttpGet]
-        public IEnumerable<Movie> GetAllMovies([FromQuery]DateTime? from, [FromQuery]DateTime? to)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IEnumerable<MovieGetModel> GetAllMovies([FromQuery]DateTime? from, [FromQuery]DateTime? to)
         {
-            IQueryable<Movie> result = context.Movies.Include(f => f.Comments).OrderByDescending(f => f.ReleseYear);
-
-            if (from == null && to == null)
-            {
-                return result;
-            }
-            if (from != null)
-            {
-                result = result.Where(f => f.DateAdded > from);
-            }
-            if (to != null)
-            {
-                result = result.Where(f => f.DateAdded < to);
-            }
-
-
-            return result;
+            return service.GetAllMovies(from, to);
         }
 
+        /// <summary>
+        /// Get a single movie
+        /// </summary>
+        /// <param name="id"> The id of the movie </param>
+        /// <returns>A movie if exists, or Not found if not exists</returns>
         // GET: api/Movie/5
         [HttpGet("{id}", Name = "Get")]
-        public Movie Get(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult Get(int id)
         {
-            return context.Movies.FirstOrDefault(c => c.Id == id);
-        }
+            var movieFound = service.GetById(id);
 
-        // POST: api/Movie
-        [HttpPost]
-        public IActionResult Post([FromBody] Movie movie)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            context.Movies.Add(movie);
-            context.SaveChanges();
-            return Ok();
-        }
-
-        // PUT: api/Movie/5
-        [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] Movie movie)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var existing = context.Movies.FirstOrDefault(c => c.Id == id);
-
-            if (existing != null)
-            {
-                movie.Id = existing.Id;
-                context.Movies.Remove(existing);
-            }
-
-            context.Movies.Add(movie);
-            context.SaveChanges();
-            return Ok();
-        }
-
-        // DELETE: api/Movie/5
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var found = context.Movies.FirstOrDefault(c => c.Id == id);
-            if (found == null)
+            if (movieFound == null)
             {
                 return NotFound();
             }
+            return Ok(movieFound);
+        }
 
-            context.Movies.Remove(found);
-            context.SaveChanges();
+        /// <summary>
+        /// Add's a movie in the application
+        /// </summary>
+        /// Sample request:
+        ///
+        ///     POST /movies
+        ///     {
+        ///         "title": "Movie with Service",
+        ///         "description": "Service description",
+        ///         "movieGenre": "Comedy",
+        ///         "durationInMinutes": 100,
+        ///         "releseYear": 2019,
+        ///         "director": "Jhon Snow",
+        ///         "dateAdded": "2019-10-10",
+        ///         "rating": 6,
+        ///         "wasWatched": "YES"
+        ///     }	
+        /// <param name="movie">The movie to be added</param>
+        /// <returns>OK if movie was added. BadRequest if not</returns>
+        // POST: api/Movie
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult Post([FromBody] MoviePostModel movie)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            service.Create(movie);
+            return Ok(movie);
+        }
+
+        /// <summary>
+        /// Updates a movie from the application if exists, if not creates a new movie
+        /// </summary>
+        /// Sample request:
+        ///
+        ///     PUT /movies
+        ///     {
+        ///         "title": "Movie with Service",
+        ///         "description": "Service description",
+        ///         "movieGenre": "Comedy",
+        ///         "durationInMinutes": 100,
+        ///         "releseYear": 2019,
+        ///         "director": "Jhon Snow",
+        ///         "dateAdded": "2019-10-10",
+        ///         "rating": 6,
+        ///         "wasWatched": "YES"
+        ///     }		
+        /// <param name="id">The id of the movie to be updated</param>
+        /// <param name="movie">The updated movie</param>
+        /// <returns>Ok if movie was updated or added, BadRequest if the movie parameters are not valid</returns>
+        // PUT: api/Movie/5
+        [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult Put(int id, [FromBody] MoviePostModel movie)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            service.Upsert(id, movie);
             return Ok();
+        }
+
+        /// <summary>
+        /// Deletes a movie from the application by ID that was given
+        /// </summary>
+        /// <param name="id">The ID of the movie to be deleted</param>
+        /// <returns>Ok if movie was deleted, NotFound if movieId not in database</returns>
+        // DELETE: api/Movie/5
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public IActionResult Delete(int id)
+        {
+            var result = service.Delete(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+            return Ok(result);
         }
     }
 }

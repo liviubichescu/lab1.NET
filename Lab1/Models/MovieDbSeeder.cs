@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Lab1.Models
 {
-    public class DataSeeder
+    public class MovieDbSeeder
     {
         public static void Initialize(MovieDbContext context)
         {

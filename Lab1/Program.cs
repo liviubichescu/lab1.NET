@@ -19,7 +19,7 @@ namespace Lab1
                 try
                 {
                     var context = services.GetRequiredService<MovieDbContext>();
-                    DataSeeder.Initialize(context);
+                    MovieDbSeeder.Initialize(context);
                 }
                 catch (Exception ex)
                 {
