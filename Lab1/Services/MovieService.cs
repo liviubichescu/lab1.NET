@@ -9,13 +9,7 @@ using System.Threading.Tasks;
 namespace Lab1.Services
 {
     public interface IMovieService
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="from"></param>
-        /// <param name="to"></param>
-        /// <returns></returns>
+    {   
         IEnumerable<MovieGetModel> GetAllMovies(DateTime? from = null, DateTime? to = null);
         Movie GetById(int id);
         Movie Create(MoviePostModel movie);
@@ -25,37 +19,37 @@ namespace Lab1.Services
 
     public class MovieService : IMovieService
     {
-        private MovieDbContext dbContext;
+        private DatabaseContext Context;
 
-        public MovieService(MovieDbContext dbContext)
+        public MovieService(DatabaseContext Context)
         {
-            this.dbContext = dbContext;
+            this.Context = Context;
         }
 
-        public Movie Create(MoviePostModel movieDTO)
+        public Movie Create(MoviePostModel movie)
         {
-            Movie addMovie = MoviePostModel.ToMovie(movieDTO);
-            dbContext.Movies.Add(addMovie);
-            dbContext.SaveChanges();
-            return addMovie;
+            Movie convertedMovie = MoviePostModel.ToMovie(movie);
+            Context.Movies.Add(convertedMovie);
+            Context.SaveChanges();
+            return convertedMovie;
         }
 
         public Movie Delete(int id)
         {
-            Movie movie = dbContext.Movies.Include(c => c.Comments).FirstOrDefault(c => c.Id == id);
-            if (movie == null)
+            Movie foundMovie = Context.Movies.Include(comment => comment.Comments).FirstOrDefault(movie => movie.Id == id);
+            if (foundMovie == null)
             {
                 return null;
             }
-            dbContext.Remove(movie);
-            dbContext.SaveChanges();
+            Context.Remove(foundMovie);
+            Context.SaveChanges();
 
-            return movie;
+            return foundMovie;
         }
 
         public IEnumerable<MovieGetModel> GetAllMovies(DateTime? from = null, DateTime? to = null)
         {
-            IQueryable<Movie> result = dbContext.Movies.Include(f => f.Comments).OrderByDescending(f => f.ReleseYear);
+            IQueryable<Movie> result = Context.Movies.Include(movie => movie.Comments).OrderByDescending(movie => movie.ReleseYear);
 
             if (from == null && to == null)
             {
@@ -63,11 +57,11 @@ namespace Lab1.Services
             }
             if (from != null)
             {
-                result = result.Where(f => f.DateAdded > from);
+                result = result.Where(movie => movie.DateAdded > from);
             }
             if (to != null)
             {
-                result = result.Where(f => f.DateAdded < to);
+                result = result.Where(movie => movie.DateAdded < to);
             }
 
 
@@ -76,22 +70,22 @@ namespace Lab1.Services
 
         public Movie GetById(int id)
         {
-            return dbContext.Movies.Include(c=> c.Comments).FirstOrDefault(m => m.Id == id);
+            return Context.Movies.Include(movie => movie.Comments).FirstOrDefault(movie => movie.Id == id);
         }
 
         public Movie Upsert(int id, Movie movie)
         {
-            var existing = dbContext.Movies.AsNoTracking().FirstOrDefault(c => c.Id == id);
+            var existing = Context.Movies.AsNoTracking().FirstOrDefault(c => c.Id == id);
 
             if (existing == null)
             {
-                dbContext.Movies.Add(movie);
-                dbContext.SaveChanges();
+                Context.Movies.Add(movie);
+                Context.SaveChanges();
                 return movie;
             }
             movie.Id = id;
-            dbContext.Movies.Update(movie);
-            dbContext.SaveChanges();
+            Context.Movies.Update(movie);
+            Context.SaveChanges();
 
             return movie;
         }

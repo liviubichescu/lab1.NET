@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Lab1.Migrations
 {
-    [DbContext(typeof(MovieDbContext))]
+    [DbContext(typeof(DatabaseContext))]
     [Migration("20190510191636_AddDatePicked")]
     partial class AddDatePicked
     {

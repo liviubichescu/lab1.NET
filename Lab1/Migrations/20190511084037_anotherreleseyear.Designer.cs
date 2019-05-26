@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Lab1.Migrations
 {
-    [DbContext(typeof(MovieDbContext))]
+    [DbContext(typeof(DatabaseContext))]
     [Migration("20190511084037_anotherreleseyear")]
     partial class anotherreleseyear
     {

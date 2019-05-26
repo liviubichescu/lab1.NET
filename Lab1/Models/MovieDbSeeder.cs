@@ -7,7 +7,7 @@ namespace Lab1.Models
 {
     public class MovieDbSeeder
     {
-        public static void Initialize(MovieDbContext context)
+        public static void Initialize(DatabaseContext context)
         {
             context.Database.EnsureCreated();
 

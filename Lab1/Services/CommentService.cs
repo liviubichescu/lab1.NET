@@ -1,10 +1,7 @@
 ﻿using Lab1.Models;
 using Lab1.ViewModels;
-using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Lab1.Services
 {
@@ -17,22 +14,22 @@ namespace Lab1.Services
 
     public class CommentService : ICommentService
     {
-        private MovieDbContext dbContext;
+        private DatabaseContext Context;
 
-        public CommentService(MovieDbContext dbContext)
+        public CommentService(DatabaseContext Context)
         {
-            this.dbContext = dbContext;
+            this.Context = Context;
         }
 
         public IEnumerable<CommentGetModel> GetAllComments(string text)
         {
-            IQueryable<CommentGetModel> result = dbContext.Comments.Select(x => new CommentGetModel() { 
+            IQueryable<CommentGetModel> result = Context.Comments.Select(comment => new CommentGetModel() { 
 
-                Id = x.Id,
-                Text = x.Text,
-                Important = x.Important,
-                MovieId = (from movies in dbContext.Movies
-                           where movies.Comments.Contains(x)
+                Id = comment.Id,
+                Text = comment.Text,
+                Important = comment.Important,
+                MovieId = (from movies in Context.Movies
+                           where movies.Comments.Contains(comment)
                            select movies.Id).FirstOrDefault()
             });
 

@@ -18,7 +18,7 @@ namespace Lab1
                 var services = scope.ServiceProvider;
                 try
                 {
-                    var context = services.GetRequiredService<MovieDbContext>();
+                    var context = services.GetRequiredService<DatabaseContext>();
                     MovieDbSeeder.Initialize(context);
                 }
                 catch (Exception ex)
