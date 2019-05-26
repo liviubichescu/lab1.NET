@@ -24,35 +24,24 @@ namespace Lab1.Services
             this.dbContext = dbContext;
         }
 
-        public IEnumerable<CommentGetModel> GetAllComments(string filter)
+        public IEnumerable<CommentGetModel> GetAllComments(string text)
         {
+            IQueryable<CommentGetModel> result = dbContext.Comments.Select(x => new CommentGetModel() { 
 
-            bool filterComment = true;
-            if (string.IsNullOrEmpty(filter))
-                filterComment = false;
+                Id = x.Id,
+                Text = x.Text,
+                Important = x.Important,
+                MovieId = (from movies in dbContext.Movies
+                           where movies.Comments.Contains(x)
+                           select movies.Id).FirstOrDefault()
+            });
 
-            var qry = GetCommentAndMovie().Where(com => filterComment ? com.Text.Contains(filter) : true
-           );
+            if (text != null)
+            {
+                result = result.Where(comment => comment.Text.Contains(text));
+            }
 
-            return qry.ToList();
-
-        }
-
-
-        private IQueryable<CommentGetModel> GetCommentAndMovie()
-        {
-            var commentAndMovie = from comment in dbContext.Comments
-                                  join movie in dbContext.Movies
-                                  on comment.MovieId equals movie.Id
-                                  select new CommentGetModel()
-                                  {
-                                      Id = comment.Id,
-                                      Text = comment.Text,
-                                      Important = comment.Important,
-                                      MovieId = comment.MovieId
-                                  };
-
-            return dbContext.Comments.Select(comment => CommentGetModel.FromComment(comment));
+            return result;
         }
     }
 }
